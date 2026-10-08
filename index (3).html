@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Winter Arc">
+<meta name="theme-color" content="#0b1220">
+<title>Winter Arc</title>
+<style>
+:root{
+  --bg:#0b1220;--card:#111b2e;--card2:#17233b;--line:#22314d;
+  --text:#e6f0ff;--muted:#8ea3c4;--accent:#7cc8ff;--accent-ink:#06243a;
+  --good:#3ddc97;--amber:#f5b942;--grey:#33405a;--danger:#ff6b81;--gold:#ffd166;
+  --glow:rgba(124,200,255,.18);color-scheme:dark;
+}
+@media (prefers-color-scheme:light){
+  :root{
+    --bg:#eef5fc;--card:#ffffff;--card2:#f2f7fd;--line:#d6e3f2;
+    --text:#0d1b2e;--muted:#5a6f8c;--accent:#1b87d6;--accent-ink:#ffffff;
+    --good:#14a86b;--amber:#d38c08;--grey:#c9d4e2;--danger:#d93a55;--gold:#c08a00;
+    --glow:rgba(27,135,214,.12);color-scheme:light;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{
+  font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 14px)
+          calc(env(safe-area-inset-bottom) + 28px) calc(env(safe-area-inset-left) + 14px);
+  background-image:radial-gradient(ellipse at top,var(--glow),transparent 60%);
+  background-repeat:no-repeat;min-height:100vh;
+}
+#app{max-width:560px;margin:0 auto}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;user-select:none;-webkit-user-select:none}
+button:disabled{opacity:.45;cursor:default}
+input,textarea{font:16px/1.4 inherit;font-family:inherit;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+h1{font-size:26px;margin:0;letter-spacing:.5px}
+h2{font-size:15px;margin:0 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 2px 14px;gap:10px}
+.head .day{font-size:15px;color:var(--accent);font-weight:700}
+.head .date{font-size:13px;color:var(--muted);text-align:right}
+.pill{display:inline-block;margin-top:6px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.pill.warn{color:var(--amber);border-color:var(--amber)}
+.editbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--amber);color:#1e1400;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-weight:600}
+.editbar button{background:#1e1400;color:#fff;border-radius:10px;padding:10px 14px;min-height:44px;font-weight:700}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:22px;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.stat.pl b{font-size:19px}
+.stat.pl.gold{border-color:var(--gold)}
+
+/* score */
+.scoretop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.pct{font-size:30px;font-weight:800}
+.badge{border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;background:var(--card2);color:var(--muted);text-align:center}
+.badge.good{background:var(--good);color:#032215}
+.badge.lock{background:var(--gold);color:#2a1d00}
+.bar{position:relative;height:14px;background:var(--card2);border-radius:999px}
+.bar .fill{height:100%;border-radius:999px;background:var(--accent);transition:width .25s}
+.bar .fill.good{background:var(--good)}
+.bar .mark{position:absolute;left:80%;top:-5px;bottom:-5px;width:2px;background:var(--text);opacity:.7}
+.bar .marklbl{position:absolute;left:80%;top:18px;transform:translateX(-50%);font-size:11px;color:var(--muted)}
+.scorefoot{display:flex;justify-content:space-between;margin-top:22px;font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:12px;border-radius:999px;padding:4px 10px;background:var(--card2);color:var(--muted)}
+.chip.on{background:var(--good);color:#032215;font-weight:700}
+
+/* habits */
+.habit{border-top:1px solid var(--line)}
+.group .habit:first-of-type{border-top:0}
+.habit.pillar{border:2px solid var(--gold);border-radius:16px;padding:0 10px;margin:4px 0 10px}
+.hrow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:8px 2px;text-align:left}
+.chk{flex:0 0 32px;height:32px;border-radius:10px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;font-size:18px}
+.done .chk{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chk.part{border-color:var(--accent);color:var(--accent)}
+.chk.bad{background:var(--danger);border-color:var(--danger);color:#fff}
+.hname{flex:1;font-weight:600}
+.hname small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;color:#2a1d00;background:var(--gold);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.done .hname{color:var(--muted)}
+.hpts{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.done .hpts{color:var(--accent);font-weight:700}
+.hpts.neg{color:var(--danger);font-weight:700}
+.subs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 12px 44px}
+.sub{display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 10px;border-radius:12px;background:var(--card2);text-align:left;font-size:14px}
+.sub.auto{border:1px dashed var(--line)}
+.schk{flex:0 0 20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:900}
+.sub.on .schk{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.sub.on{color:var(--muted)}
+.extra{padding:0 0 12px 44px}
+.restbtn{width:100%;min-height:48px;border-radius:12px;border:1px dashed var(--line);font-size:14px;font-weight:600;color:var(--muted)}
+.restbtn.on{border-style:solid;border-color:var(--accent);color:var(--accent)}
+.offnote{display:flex;justify-content:space-between;align-items:center;min-height:52px;padding:8px 2px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{min-height:48px;border-radius:12px;background:var(--card2);font-size:14px;font-weight:600;color:var(--muted);border:1px solid var(--line)}
+.seg button.on.ok{background:var(--good);color:#032215;border-color:var(--good)}
+.seg button.on.late{background:var(--danger);color:#fff;border-color:var(--danger)}
+.task{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.tchk{flex:0 0 48px;height:48px;border-radius:12px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;font-size:18px}
+.tchk.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.task input{min-height:48px}
+.task.on input{text-decoration:line-through;color:var(--muted)}
+textarea.journal{min-height:96px;resize:vertical}
+
+/* level + boss */
+.lvl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.lvl b{font-size:20px}
+.hp{height:16px;border-radius:999px;background:var(--card2);overflow:hidden;margin:10px 0 8px}
+.hp div{height:100%;background:linear-gradient(90deg,var(--danger),#ff9aa9);transition:width .25s}
+.hp.dead div{background:var(--grey)}
+.xpbar{height:10px;border-radius:999px;background:var(--card2);overflow:hidden;margin-top:6px}
+.xpbar div{height:100%;background:var(--accent)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* history */
+.hist{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.hd{min-height:56px;border-radius:12px;background:var(--grey);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--text);border:2px solid transparent}
+.hd b{font-size:16px}
+.hd.good{background:var(--good);color:#032215}
+.hd.amber{background:var(--amber);color:#241800}
+.hd.today{border-color:var(--accent)}
+.hd.sel{outline:3px solid var(--text);outline-offset:1px}
+.legend{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* rules */
+details summary{cursor:pointer;font-weight:700;color:var(--muted);min-height:32px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details ul{margin:8px 0 0;padding-left:18px;font-size:14px;color:var(--muted)}
+details li{margin-bottom:6px}
+
+/* data */
+.btn{min-height:50px;border-radius:14px;padding:12px 16px;font-weight:700;background:var(--card2);border:1px solid var(--line);width:100%}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--danger)}
+.btn.armed{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stack > *{margin-bottom:10px}
+textarea.bk{min-height:160px;margin:12px 0 0;font:12px/1.4 ui-monospace,Menlo,monospace}
+.msg{font-size:13px;margin-top:10px;color:var(--accent)}
+.msg.err{color:var(--danger)}
+.banner{border-color:var(--amber)}
+
+/* countdown */
+.count{text-align:center;padding:40px 16px}
+.count .snow{font-size:52px}
+.count h3{font-size:24px;margin:10px 0 4px}
+.count .n{font-size:56px;font-weight:800;color:var(--accent);line-height:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+var KEY="winterArc.v1", SKEY="winterArc.sync", START="2026-10-08", TOTAL=90, MS=86400000;
+var RAW="Raw data (do not edit)", CORE_BONUS=15;
+
+/* ---------- habits ----------
+   meal: +pts on time, -pts late (an unmarked past day counts as late)
+   subs given as {n,auto} tick themselves from what you type        */
+var HABITS=[
+  {id:"wake",name:"Wake at 5 AM",pts:25,g:"Morning",core:true},
+  {id:"dip",name:"Ice-water face dip",pts:5,g:"Morning"},
+  {id:"coldam",name:"Cold shower, morning",pts:10,g:"Morning"},
+  {id:"steps6",name:"6k steps before 8 AM",pts:10,g:"Morning"},
+  {id:"mroutine",name:"Morning routine",pts:10,g:"Morning",subs:["Make bed","Stretch 5 min",{n:"Plan top 3 tasks",auto:"plan"},"Skincare"]},
+  {id:"breakfast",name:"Breakfast",pts:5,g:"Morning",meal:"9 AM"},
+  {id:"multi",name:"Multivitamin after breakfast",pts:5,g:"Morning"},
+  {id:"forex",name:"Forex",pts:40,g:"Day",core:true,pillar:true,noSun:true,subs:["Learn: course / videos","Chart observation","Practice trade / backtest",{n:"Today's journal / learnings",auto:"journal"}]},
+  {id:"tasks",name:"Top 3 tasks done",pts:15,g:"Day",tasks:true},
+  {id:"gym",name:"Gym",pts:20,g:"Day",rest:true},
+  {id:"steps10",name:"10k steps total",pts:20,g:"Day",core:true},
+  {id:"water",name:"4 L water",pts:10,g:"Day"},
+  {id:"lunch",name:"Lunch",pts:5,g:"Day",meal:"2 PM"},
+  {id:"perfume",name:"Perfume ×3",pts:6,g:"Day",subs:["Morning","Afternoon","Evening 5–6 PM"]},
+  {id:"riyaaz",name:"Vocal + riyaaz, 5 min",pts:5,g:"Day"},
+  {id:"coldpm",name:"Cold shower, night",pts:10,g:"Night"},
+  {id:"dinner",name:"Dinner",pts:5,g:"Night",meal:"9 PM"},
+  {id:"mag",name:"Magnesium before sleep",pts:5,g:"Night"},
+  {id:"nroutine",name:"Night routine",pts:10,g:"Night",subs:["Plan tomorrow","No screens 30 min","Teeth + skincare","Gratitude line","Warm water with triphala","Rose water on face","Facial massage"]},
+  {id:"bed",name:"In bed by 9:30 PM",pts:10,g:"Night"}
+];
+var H={}; HABITS.forEach(function(h){H[h.id]=h;});
+var GROUPS=[["Morning","🌅"],["Day","☀️"],["Night","🌙"]];
+var LEVELS=[[0,"Frost Rookie"],[1000,"Iceborn"],[3500,"Snow Walker"],[8000,"Winter Beast"],[14000,"Arc Legend"]];
+var BOSSES=["Frost Wraith","Ice Golem","Blizzard Hound","Glacier Titan","Sleet Serpent","Hoarfrost King","Avalanche Ogre","Polar Phantom","Rime Hydra","Tundra Warlord","Permafrost Wyrm","Whiteout Colossus","The Final Arc"];
+
+/* ---------- storage ---------- */
+var memStore=null;
+function fresh(){return {v:2,days:{}};}
+function migrate(s){
+  if(!s||typeof s.days!=="object"||s.days===null||Array.isArray(s.days))return null;
+  if((s.v||1)<2){
+    // v1 forex subs were [chart, practice, journal-tick]; v2 is [learn, chart, practice, journal-text]
+    Object.keys(s.days).forEach(function(k){
+      var d=s.days[k];
+      if(d&&d.h&&Array.isArray(d.h.forex)){var o=d.h.forex;d.h.forex=[false,!!o[0],!!o[1],false];}
+    });
+    s.v=2;
+  }
+  return s;
+}
+function load(){
+  try{
+    var r=localStorage.getItem(KEY);
+    if(r){
+      try{var s=migrate(JSON.parse(r));if(s)return s;}
+      catch(e){try{localStorage.setItem(KEY+".corrupt",r);}catch(e2){}}
+    }
+  }catch(e){}
+  return memStore||fresh();
+}
+function persist(){memStore=S;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){persist();markDirty();}
+var S=load();
+
+/* ---------- sheet sync config (kept apart from habit data) ---------- */
+var CFG={url:"",token:"",last:0,dirty:false,err:""};
+try{var c0=JSON.parse(localStorage.getItem(SKEY)||"null");if(c0)for(var x0 in c0)CFG[x0]=c0[x0];}catch(e){}
+CFG.token="wa-0f436c1ce7457c890818e784";   // same secret as in the Sheet script
+var SHEET_URL="https://script.google.com/macros/s/AKfycbwaJXL8K0bmqqjOfV_utfHbZIT9OM8rmaW5XLsi5Ms1azs40wOqrx9AdVFjORUBfHCwww/exec";
+if(!CFG.url||CFG.url.indexOf("AKfycbwaJ")<0){CFG.url=SHEET_URL;CFG.err="";CFG.dirty=true;}
+function saveCfg(){try{localStorage.setItem(SKEY,JSON.stringify(CFG));}catch(e){}}
+
+/* ---------- dates ---------- */
+function pad(n){return (n<10?"0":"")+n;}
+function toT(k){var p=k.split("-");return Date.UTC(+p[0],+p[1]-1,+p[2]);}
+function keyOf(t){var d=new Date(t);return d.getUTCFullYear()+"-"+pad(d.getUTCMonth()+1)+"-"+pad(d.getUTCDate());}
+function todayKey(){var n=new Date();return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate());}
+function addDays(k,n){return keyOf(toT(k)+n*MS);}
+function idx(k){return Math.round((toT(k)-toT(START))/MS);}
+function dow(k){return new Date(toT(k)).getUTCDay();}
+function isSun(k){return dow(k)===0;}
+function fmt(k,o){var opt={timeZone:"UTC"};for(var x in o)opt[x]=o[x];return new Date(toT(k)).toLocaleDateString("en-IN",opt);}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function r1(n){return Math.round(n*10)/10;}
+
+/* ---------- scoring ---------- */
+function getDay(k){var d=S.days[k]||{};if(!d.h)d.h={};return d;}
+function day(k){if(!S.days[k])S.days[k]={h:{}};if(!S.days[k].h)S.days[k].h={};return S.days[k];}
+function sname(s){return typeof s==="string"?s:s.n;}
+function tasksOf(d){var t=Array.isArray(d.tasks)?d.tasks:[],o=[];for(var i=0;i<3;i++){var x=t[i]||{};o.push({t:String(x.t||""),done:!!x.done});}return o;}
+function planned(d){return tasksOf(d).every(function(x){return x.t.trim().length>0;});}
+function journaled(d){return String(d.journal||"").trim().length>=10;}
+function subArr(d,h){
+  var v=d.h[h.id];
+  return h.subs.map(function(s,i){
+    if(s.auto==="plan")return planned(d);
+    if(s.auto==="journal")return journaled(d);
+    return !!(Array.isArray(v)&&v[i]);
+  });
+}
+function manualIdx(h){var o=[];h.subs.forEach(function(s,i){if(typeof s==="string")o.push(i);});return o;}
+function active(k){var sun=isSun(k);return HABITS.filter(function(h){return !(h.noSun&&sun);});}
+function frac(d,h){
+  if(h.rest&&d.rest)return 1;
+  if(h.subs)return subArr(d,h).filter(Boolean).length/h.subs.length;
+  if(h.tasks)return tasksOf(d).filter(function(x){return x.done;}).length/3;
+  return d.h[h.id]?1:0;
+}
+function mealVal(d,h,k){var v=d.h[h.id];if(v==="on")return 1;if(v==="late")return -1;return k<todayKey()?-1:0;}
+function earnedOf(d,h,k){return h.meal?h.pts*mealVal(d,h,k):h.pts*frac(d,h);}
+function score(k){
+  var d=getDay(k),e=0,a=0;
+  active(k).forEach(function(h){a+=h.pts;e+=earnedOf(d,h,k);});
+  return {e:e,a:a,p:a?Math.max(e,0)/a:0};
+}
+function forexOk(k){return isSun(k)||frac(getDay(k),H.forex)>=0.75-1e-9;}
+function isGood(k){return score(k).p>=0.8-1e-9&&forexOk(k);}
+function core3(k){var d=getDay(k);return !!d.h.wake&&!!d.h.steps10&&forexOk(k);}
+
+function stats(){
+  var T=todayKey(),streak=0,grace=0,best=0,xp=0;
+  if(T<START)return {streak:0,grace:0,best:0,xp:0};
+  for(var k=START;k<=T;k=addDays(k,1)){
+    var s=score(k); xp+=Math.max(s.e,0)+(core3(k)?CORE_BONUS:0);
+    if(isGood(k)){streak++; if(streak%7===0)grace++; if(streak>best)best=streak;}
+    else if(k!==T){ if(grace>0)grace--; else streak=0; }
+  }
+  return {streak:streak,grace:grace,best:best,xp:Math.round(xp)};
+}
+function pillarStreak(test,skipSun){
+  var T=todayKey(),s=0;if(T<START)return 0;
+  for(var k=START;k<=T;k=addDays(k,1)){
+    if(skipSun&&isSun(k))continue;
+    if(test(k))s++; else if(k!==T)s=0;
+  }
+  return s;
+}
+function forexDays(){var T=todayKey(),n=0;for(var k=START;k<=T;k=addDays(k,1))if(!isSun(k)&&forexOk(k))n++;return n;}
+function weekKeys(k){var off=(dow(k)+6)%7,m=addDays(k,-off),o=[];for(var i=0;i<7;i++)o.push(addDays(m,i));return o;}
+function restUsed(k){return weekKeys(k).filter(function(x){return S.days[x]&&S.days[x].rest;}).length;}
+function blockGood(b){
+  var T=todayKey(),g=0,len=0;
+  for(var i=0;i<7;i++){
+    var n=b*7+i; if(n>=TOTAL)break; len++;
+    var x=addDays(START,n); if(x>T)continue;
+    if(isGood(x))g++;
+  }
+  return {good:g,len:len};
+}
+function bossesBeaten(){
+  var last=Math.min(Math.floor(idx(todayKey())/7),Math.floor((TOTAL-1)/7)),n=0;
+  for(var b=0;b<=last;b++)if(blockGood(b).good>=5)n++;
+  return n;
+}
+function level(xp){
+  var i=0;for(var j=0;j<LEVELS.length;j++)if(xp>=LEVELS[j][0])i=j;
+  var cur=LEVELS[i],nx=LEVELS[i+1];
+  return {name:cur[1],next:nx?nx[1]:null,need:nx?nx[0]-xp:0,pct:nx?(xp-cur[0])/(nx[0]-cur[0]):1};
+}
+
+/* ---------- google sheet sync ---------- */
+var rev=0,syncing=false,syncTimer=null;
+function markDirty(){rev++;CFG.dirty=true;saveCfg();clearTimeout(syncTimer);syncTimer=setTimeout(pushSheet,2500);paintSync();}
+function sheetHeader(){
+  return ["Date","Day","Weekday","Score %","Points","Max","Good day","Core 3"]
+    .concat(HABITS.map(function(h){return h.name;}))
+    .concat(["Task 1","Task 2","Task 3","Forex journal","Gym rest day",RAW]);
+}
+function sheetRow(k){
+  var d=getDay(k),s=score(k),ts=tasksOf(d);
+  return [k,idx(k)+1,fmt(k,{weekday:"short"}),Math.round(s.p*100),r1(s.e),s.a,isGood(k)?"Yes":"",core3(k)?"Yes":""]
+    .concat(HABITS.map(function(h){return (h.noSun&&isSun(k))?"off":r1(earnedOf(d,h,k));}))
+    .concat(ts.map(function(x){return x.t?(x.done?"✓ ":"")+x.t:"";}))
+    .concat([String(d.journal||""),d.rest?"Yes":"",JSON.stringify(S.days[k]||{})]);
+}
+function pushSheet(){
+  if(!CFG.url||!CFG.dirty)return;
+  if(syncing){clearTimeout(syncTimer);syncTimer=setTimeout(pushSheet,3000);return;}
+  var keys=Object.keys(S.days).filter(function(k){return k>=START;}).sort();
+  if(!keys.length){CFG.dirty=false;saveCfg();paintSync();return;}
+  var sent=rev; syncing=true; paintSync();
+  var body={token:CFG.token,action:"push",header:sheetHeader(),rows:keys.map(sheetRow)};
+  getJSON(CFG.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)})
+    .then(function(j){
+      if(!j||!j.ok)throw new Error((j&&j.error)||"Sheet said no");
+      CFG.err="";CFG.last=Date.now();
+      if(rev===sent)CFG.dirty=false;
+    })
+    .catch(function(e){CFG.err=String(e&&e.message||e);})
+    .then(function(){
+      syncing=false;saveCfg();paintSync();
+      if(CFG.dirty){clearTimeout(syncTimer);syncTimer=setTimeout(pushSheet,CFG.err?30000:2500);}
+    });
+}
+function getJSON(url,opt){
+  return Promise.race([
+    fetch(url,opt).then(function(r){return r.text();}).then(function(t){
+      try{return JSON.parse(t);}catch(e){throw new Error("Google sent a login page, not data. In Apps Script: Deploy > Manage deployments > edit > Who has access = Anyone.");}
+    }),
+    new Promise(function(_,rej){setTimeout(function(){rej(new Error("No reply in 20 sec. Check internet and try again."));},20000);})
+  ]);
+}
+function pullSheet(){
+  if(!CFG.url){say("Add your Sheet link first.",true);render();return;}
+  say("Restoring from Sheet…",false);busy=true;render();
+  getJSON(CFG.url+(CFG.url.indexOf("?")<0?"?":"&")+"action=pull&token="+encodeURIComponent(CFG.token))
+    .then(function(j){
+      if(!j||!j.ok)throw new Error((j&&j.error)||"Sheet said no");
+      var s=migrate({v:2,days:j.days||{}});
+      S=s;persist();view=null;CFG.dirty=false;saveCfg();
+      say("Restored "+Object.keys(S.days).length+" day(s) from Sheet ✓",false);
+    })
+    .catch(function(e){say("Restore failed: "+(e&&e.message||e),true);})
+    .then(function(){busy=false;render();});
+}
+function testSheet(){
+  say("Checking link…",false,"sync");busy=true;render();
+  getJSON(CFG.url+(CFG.url.indexOf("?")<0?"?":"&")+"action=ping&token="+encodeURIComponent(CFG.token))
+    .then(function(j){
+      if(!j||!j.ok)throw new Error((j&&j.error)||"Sheet said no");
+      say("Connected ✓ Backing up now.",false);
+      if(Object.keys(S.days).length){rev++;CFG.dirty=true;saveCfg();pushSheet();}
+    })
+    .catch(function(e){say("Couldn't connect: "+(e&&e.message||e),true);})
+    .then(function(){busy=false;render();});
+}
+function syncText(){
+  if(!CFG.url)return "☁️ Sheet backup off";
+  if(syncing)return "☁️ Syncing…";
+  if(CFG.dirty&&CFG.err)return "⚠️ Sync failed · will retry";
+  if(CFG.dirty)return "☁️ Waiting to sync";
+  if(CFG.last)return "☁️ Synced "+new Date(CFG.last).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"});
+  return "☁️ Linked";
+}
+function paintSync(){
+  var el=document.getElementById("syncpill");
+  if(el){el.textContent=syncText();el.className="pill"+(CFG.dirty&&CFG.err?" warn":"");}
+  var info=document.getElementById("syncinfo");
+  if(info)info.textContent=syncText()+(CFG.err&&CFG.dirty?" — "+CFG.err:"");
+}
+
+/* ---------- ui state ---------- */
+var view=null, showBackup=false, armed=null, armTimer=null, msg="", msgErr=false, msgAt="top", busy=false;
+function say(t,err,where){msg=t;msgErr=!!err;msgAt=where||msgAt;}
+function msgHTML(where){return (msg&&msgAt===where)?'<div class="msg'+(msgErr?' err':'')+'">'+esc(msg)+'</div>':"";}
+function viewKey(){var T=todayKey();if(view&&view<=T&&view>=START)return view;view=null;return T;}
+function arm(name){armed=name;clearTimeout(armTimer);armTimer=setTimeout(function(){armed=null;render();},4000);}
+
+/* ---------- render ---------- */
+var app=document.getElementById("app");
+
+function headerHTML(T){
+  var n=idx(T)+1,label;
+  if(T<START)label="Pre-season";
+  else if(n>TOTAL)label="Arc complete 🏔";
+  else label="Day "+n+" of "+TOTAL;
+  return '<div class="head"><div><h1>❄️ Winter Arc</h1><div class="day">'+label+'</div>'+
+         '<span id="syncpill" class="pill'+(CFG.dirty&&CFG.err?' warn':'')+'">'+syncText()+'</span></div>'+
+         '<div class="date">'+fmt(T,{weekday:"short"})+'<br>'+fmt(T,{day:"numeric",month:"short"})+'</div></div>';
+}
+
+function rowHead(h,label,sub,chkCls,chkTxt,ptsTxt,ptsCls,act){
+  return '<button class="hrow"'+(act?' data-act="'+act+'" data-id="'+h.id+'"':'')+'>'+
+    '<span class="chk '+chkCls+'">'+chkTxt+'</span>'+
+    '<span class="hname">'+label+(h.core?'<span class="tag">CORE</span>':'')+(sub?'<small>'+sub+'</small>':'')+'</span>'+
+    '<span class="hpts '+(ptsCls||'')+'">'+ptsTxt+'</span></button>';
+}
+
+function habitHTML(h,d,k){
+  var T=todayKey();
+
+  if(h.meal){
+    var v=d.h[h.id], mv=mealVal(d,h,k), pts=h.pts*mv;
+    var sub=v==="on"?"Before "+h.meal+" ✓":v==="late"?"Late or skipped":(k<T?"Not marked · counted late":"Before "+h.meal+" = +"+h.pts+" · late = −"+h.pts);
+    return '<div class="habit'+(mv>0?' done':'')+'">'+
+      rowHead(h,h.name,sub,mv<0?'bad':'',mv>0?'✓':mv<0?'✗':'',(pts>0?'+':'')+r1(pts)+'/'+h.pts,mv<0?'neg':'',null)+
+      '<div class="extra"><div class="seg">'+
+      '<button class="ok'+(v==="on"?' on':'')+'" data-act="meal" data-id="'+h.id+'" data-v="on">✓ Before '+h.meal+'</button>'+
+      '<button class="late'+(v==="late"?' on':'')+'" data-act="meal" data-id="'+h.id+'" data-v="late">Late / skipped</button>'+
+      '</div></div></div>';
+  }
+
+  var f=frac(d,h),done=f>=1-1e-9,part=f>0&&!done,earned=r1(h.pts*f),rest=h.rest&&d.rest;
+  var sub="";
+  if(h.subs){sub=subArr(d,h).filter(Boolean).length+'/'+h.subs.length+' done';}
+  if(h.tasks){sub=tasksOf(d).filter(function(x){return x.done;}).length+'/3 done';}
+  if(h.pillar&&!isSun(k))sub+=(forexOk(k)?' · pillar met ✓':' · 3 of 4 needed for a good day');
+  if(rest)sub='Rest day (counts as done) · tap to undo';
+
+  var out='<div class="habit'+(done?' done':'')+(h.pillar?' pillar':'')+'">'+
+    rowHead(h,(h.pillar?'📈 ':'')+h.name,sub,part?'part':'',done?'✓':part?'–':'',earned+'/'+h.pts,'','toggle');
+
+  if(h.subs){
+    var arr=subArr(d,h);
+    out+='<div class="subs">'+h.subs.map(function(s,i){
+      var auto=typeof s!=="string";
+      return '<button class="sub'+(arr[i]?' on':'')+(auto?' auto':'')+'" data-act="'+(auto?'focus':'sub')+'" data-id="'+h.id+'" data-i="'+i+'"'+(auto?' data-f="'+s.auto+'"':'')+'>'+
+        '<span class="schk">'+(arr[i]?'✓':'')+'</span>'+sname(s)+(auto&&!arr[i]?' ✍️':'')+'</button>';
+    }).join("")+'</div>';
+  }
+  if(h.pillar){
+    out+='<div class="extra"><textarea class="journal" data-in="journal" placeholder="Today\'s journal: what I learned, what I saw on the chart, what I\'ll do tomorrow…">'+esc(d.journal||"")+'</textarea></div>';
+  }
+  if(h.tasks){
+    out+='<div class="extra">'+tasksOf(d).map(function(t,i){
+      return '<div class="task'+(t.done?' on':'')+'"><button class="tchk'+(t.done?' on':'')+'" data-act="task" data-i="'+i+'" aria-label="Tick task '+(i+1)+'">'+(t.done?'✓':(i+1))+'</button>'+
+        '<input data-in="task" data-i="'+i+'" value="'+esc(t.t)+'" placeholder="Task '+(i+1)+'" enterkeyhint="next" autocomplete="off"></div>';
+    }).join("")+'<div class="small muted">Writing all 3 ticks “Plan top 3 tasks” in your morning routine.</div></div>';
+  }
+  if(h.rest){
+    var left=2-restUsed(k);
+    out+='<div class="extra">'+(rest
+      ?'<button class="restbtn on" data-act="rest">😴 Rest day taken · Undo</button>'
+      :'<button class="restbtn" data-act="rest"'+(left<=0?' disabled':'')+'>😴 Take rest day ('+Math.max(left,0)+' of 2 left this week)</button>')+'</div>';
+  }
+  return out+'</div>';
+}
+
+function syncSection(){
+  var o='<div class="card"><h2>☁️ Google Sheet backup</h2><div class="stack">'+
+    '<input data-cfg="url" value="'+esc(CFG.url)+'" placeholder="Apps Script web app link (…/exec)" autocomplete="off" autocapitalize="off" spellcheck="false">'+
+    '</div><div class="btns" style="margin-top:0">'+
+    '<button class="btn primary" data-act="cfgsave"'+(busy?' disabled':'')+'>'+(busy?'Checking…':'Save & test')+'</button>'+
+    '<button class="btn" data-act="syncnow"'+(CFG.url?'':' disabled')+'>Sync now</button></div>'+
+    '<div class="btns"><button class="btn'+(armed==="pull"?' armed':'')+'" data-act="pull" style="grid-column:1/3"'+(CFG.url?'':' disabled')+'>'+
+    (armed==="pull"?'Tap again: replace phone data with Sheet':'⬇️ Restore from Sheet')+'</button></div>'+
+    msgHTML("sync")+'<div id="syncinfo" class="small muted" style="margin-top:10px">'+syncText()+(CFG.err&&CFG.dirty?' — '+esc(CFG.err):'')+'</div>'+
+    '<div class="small muted" style="margin-top:4px">Every change backs up to tab “Winter Arc 2026” a few seconds later. The Sheet never deletes rows.</div></div>';
+  return o;
+}
+
+function dataSection(){
+  var o='<div class="card"><h2>Data</h2><div class="btns" style="margin-top:0">'+
+    '<button class="btn" data-act="backup">'+(showBackup?'Hide backup':'Backup / restore')+'</button>'+
+    '<button class="btn danger'+(armed==="reset"?' armed':'')+'" data-act="reset">'+(armed==="reset"?'Tap again to reset':'Reset')+'</button></div>';
+  if(showBackup){
+    o+='<textarea id="bk" class="bk" spellcheck="false" autocapitalize="off" autocorrect="off">'+esc(JSON.stringify(S))+'</textarea>'+
+       '<div class="btns"><button class="btn" data-act="copy">Copy text</button>'+
+       '<button class="btn primary" data-act="restore">Restore from text</button></div>';
+  }
+  return o+msgHTML("data")+'<div class="small muted" style="margin-top:10px">Reset clears this phone only, not the Sheet.</div></div>';
+}
+
+function rulesHTML(){
+  return '<div class="card"><details><summary>📜 How scoring works ▾</summary><ul>'+
+    '<li><b>Good day</b> = 80%+ of today\'s points <b>and</b> Forex pillar met (3 of 4 parts, Mon–Sat).</li>'+
+    '<li><b>Forex</b> is worth 40 pts, the biggest habit. Sunday is off.</li>'+
+    '<li><b>Core 3</b> (5 AM + 10k steps + Forex) all done = +'+CORE_BONUS+' bonus XP.</li>'+
+    '<li><b>Meals</b>: on time +5, late or skipped −5. A past day left unmarked counts as late.</li>'+
+    '<li><b>Streak</b>: consecutive good days. Every 7 earns a grace token that saves one missed day.</li>'+
+    '<li><b>Boss</b>: 5 good days in a 7-day block beats it.</li>'+
+    '<li><b>Gym rest</b>: 2 per week (Mon–Sun), counts as done.</li></ul></details></div>';
+}
+
+function render(){
+  var T=todayKey(),html=headerHTML(T);
+
+  if(T<START){
+    var n=Math.round((toT(START)-toT(T))/MS);
+    html+='<div class="card count"><div class="snow">🏔️</div><h3>Starts 8 Oct</h3>'+
+          '<div class="n">'+n+'</div><div class="muted">day'+(n===1?'':'s')+' to go</div></div>';
+    app.innerHTML=html+syncSection()+dataSection();return;
+  }
+
+  if(!Object.keys(S.days).length&&CFG.url){
+    html+='<div class="card banner"><b>This phone has no Winter Arc data.</b><div class="small muted" style="margin:4px 0 10px">If you\'ve tracked before, pull it back from your Sheet.</div>'+
+      '<button class="btn primary'+(armed==="pull"?' armed':'')+'" data-act="pull">'+(armed==="pull"?'Tap again to restore':'⬇️ Restore from Sheet')+'</button></div>';
+  }
+  if(msg&&msgAt==="top")html+='<div class="card msg'+(msgErr?' err':'')+'" style="margin-top:0">'+esc(msg)+'</div>';
+
+  var k=viewKey(),d=getDay(k),st=stats(),sc=score(k),pct=Math.round(sc.p*100),good=isGood(k),fx=forexOk(k);
+
+  if(k!==T){
+    html+='<div class="editbar"><span>✏️ Editing '+fmt(k,{weekday:"short",day:"numeric",month:"short"})+'</span>'+
+          '<button data-act="today">Back to today</button></div>';
+  }
+
+  html+='<div class="stats">'+
+    '<div class="stat"><b>🔥 '+st.streak+'</b><span>streak</span></div>'+
+    '<div class="stat"><b>❄️ '+st.grace+'</b><span>grace tokens</span></div>'+
+    '<div class="stat"><b>'+st.xp+'</b><span>XP</span></div></div>';
+
+  html+='<div class="stats">'+
+    '<div class="stat pl gold"><b>📈 '+pillarStreak(function(x){return frac(getDay(x),H.forex)>=0.75-1e-9;},true)+'</b><span>Forex streak · '+forexDays()+' total</span></div>'+
+    '<div class="stat pl"><b>⏰ '+pillarStreak(function(x){return !!getDay(x).h.wake;})+'</b><span>5 AM streak</span></div>'+
+    '<div class="stat pl"><b>👟 '+pillarStreak(function(x){return !!getDay(x).h.steps10;})+'</b><span>10k streak</span></div></div>';
+
+  var badge=good?'<span class="badge good">✓ Good day</span>'
+    :(pct>=80&&!fx)?'<span class="badge lock">🔒 Finish Forex</span>'
+    :'<span class="badge">'+(80-pct)+'% to good day</span>';
+  html+='<div class="card"><div class="scoretop"><div><div class="pct">'+pct+'%</div>'+
+    '<div class="small muted">'+r1(sc.e)+' / '+sc.a+' pts'+(k===T?' today':'')+'</div></div>'+badge+'</div>'+
+    '<div class="bar"><div class="fill'+(good?' good':'')+'" style="width:'+Math.min(pct,100)+'%"></div>'+
+    '<div class="mark"></div><div class="marklbl">80%</div></div>'+
+    '<div class="chips">'+
+      '<span class="chip'+(d.h.wake?' on':'')+'">⏰ 5 AM</span>'+
+      '<span class="chip'+(d.h.steps10?' on':'')+'">👟 10k</span>'+
+      '<span class="chip'+(isSun(k)?'':(fx?' on':''))+'">📈 Forex'+(isSun(k)?' off':'')+'</span>'+
+      (core3(k)?'<span class="chip on">Core 3 · +'+CORE_BONUS+' XP</span>':'')+
+    '</div>'+
+    '<div class="scorefoot"><span>'+fmt(k,{weekday:"long"})+'</span><span>Best streak: '+st.best+'</span></div></div>';
+
+  GROUPS.forEach(function(g){
+    html+='<div class="card group"><h2>'+g[1]+' '+g[0]+'</h2>';
+    HABITS.filter(function(h){return h.g===g[0];}).forEach(function(h){
+      if(h.noSun&&isSun(k)){html+='<div class="offnote"><span>'+h.name+'</span><span>Sunday off 🌴</span></div>';return;}
+      html+=habitHTML(h,d,k);
+    });
+    html+='</div>';
+  });
+
+  var b=Math.min(Math.floor(idx(T)/7),Math.floor((TOTAL-1)/7)),bg=blockGood(b),hpLeft=Math.max(5-bg.good,0),dead=hpLeft===0;
+  var bStart=addDays(START,b*7),bEnd=addDays(START,b*7+bg.len-1),daysLeft=Math.max(idx(bEnd)-idx(T),0);
+  html+='<div class="card"><h2>⚔️ Weekly boss</h2><div class="row"><b>'+BOSSES[b%BOSSES.length]+(dead?' · defeated 🏆':'')+'</b>'+
+    '<span class="small muted">Week '+(b+1)+'</span></div>'+
+    '<div class="hp'+(dead?' dead':'')+'"><div style="width:'+(hpLeft/5*100)+'%"></div></div>'+
+    '<div class="row small muted"><span>HP '+hpLeft+'/5 · '+bg.good+' good day'+(bg.good===1?'':'s')+'</span>'+
+    '<span>'+(dead?'Beaten':daysLeft+' day'+(daysLeft===1?'':'s')+' left')+'</span></div>'+
+    '<div class="small muted" style="margin-top:6px">'+fmt(bStart,{day:"numeric",month:"short"})+' – '+fmt(bEnd,{day:"numeric",month:"short"})+
+    ' · Bosses beaten: <b style="color:var(--text)">'+bossesBeaten()+'</b></div></div>';
+
+  var lv=level(st.xp);
+  html+='<div class="card"><h2>🧊 Level</h2><div class="lvl"><b>'+lv.name+'</b>'+
+    '<span class="small muted">'+(lv.next?lv.need+' XP to '+lv.next:'Max level')+'</span></div>'+
+    '<div class="xpbar"><div style="width:'+Math.round(lv.pct*100)+'%"></div></div></div>';
+
+  var first=addDays(T,-13); if(first<START)first=START;
+  html+='<div class="card"><h2>📅 Last 14 days</h2><div class="hist">';
+  for(var x=first;x<=T;x=addDays(x,1)){
+    var s=score(x),cls=isGood(x)?"good":s.p>=0.5?"amber":"";
+    html+='<button class="hd '+cls+(x===T?' today':'')+(x===k?' sel':'')+'" data-act="view" data-k="'+x+'">'+
+      fmt(x,{weekday:"narrow"})+'<b>'+fmt(x,{day:"numeric"})+'</b></button>';
+  }
+  html+='</div><div class="legend"><span><i style="background:var(--good)"></i>good day</span>'+
+    '<span><i style="background:var(--amber)"></i>50%+</span><span><i style="background:var(--grey)"></i>less</span></div>'+
+    '<div class="small muted" style="margin-top:8px">Tap a day to edit it.</div></div>';
+
+  html+=rulesHTML()+syncSection()+dataSection();
+  app.innerHTML=html;
+}
+
+/* don't redraw while you're typing — it would close the keyboard */
+var pendingRender=false;
+function typing(){var a=document.activeElement;return !!(a&&app.contains(a)&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"));}
+function softRender(){if(typing()){pendingRender=true;return;}pendingRender=false;render();}
+
+/* ---------- actions ---------- */
+function buzz(){try{if(navigator.vibrate)navigator.vibrate(8);}catch(e){}}
+
+app.addEventListener("click",function(ev){
+  var b=ev.target.closest("[data-act]"); if(!b||b.disabled)return;
+  var a=b.dataset.act,k=viewKey(),h,d,arr,nv;
+  if(armed&&a!==armed){armed=null;clearTimeout(armTimer);}
+  if(a!=="cfgsave"&&a!=="pull"&&a!=="restore"&&a!=="reset")msg="";
+  if(a==="cfgsave"||a==="syncnow")msgAt="sync";
+  if(a==="pull")msgAt=b.closest(".banner")?"top":"sync";
+  if(a==="restore"||a==="reset")msgAt="data";
+
+  if(a==="toggle"){
+    h=H[b.dataset.id]; d=day(k);
+    if(h.rest&&d.rest){d.rest=false;d.h[h.id]=false;}
+    else if(h.subs){
+      arr=subArr(d,h); var man=manualIdx(h);
+      var all=man.every(function(i){return arr[i];});
+      nv=Array.isArray(d.h[h.id])?d.h[h.id].slice():[];
+      man.forEach(function(i){nv[i]=!all;}); d.h[h.id]=nv;
+    }
+    else if(h.tasks){var ts=tasksOf(d),allT=ts.every(function(t){return t.done;});ts.forEach(function(t){t.done=!allT;});d.tasks=ts;}
+    else d.h[h.id]=!d.h[h.id];
+    save();buzz();
+  }else if(a==="sub"){
+    h=H[b.dataset.id]; d=day(k); arr=subArr(d,h); var i=+b.dataset.i;
+    nv=Array.isArray(d.h[h.id])?d.h[h.id].slice():[]; nv[i]=!arr[i]; d.h[h.id]=nv; save();buzz();
+  }else if(a==="focus"){
+    var el=b.dataset.f==="journal"?app.querySelector('[data-in="journal"]')
+      :(function(){var t=tasksOf(getDay(k));for(var j=0;j<3;j++)if(!t[j].t.trim())return app.querySelector('[data-in="task"][data-i="'+j+'"]');return app.querySelector('[data-in="task"][data-i="0"]');})();
+    if(el){el.focus();el.scrollIntoView({block:"center",behavior:"smooth"});}
+    return;
+  }else if(a==="task"){
+    d=day(k); var tl=tasksOf(d), ti=+b.dataset.i; tl[ti].done=!tl[ti].done; d.tasks=tl; save();buzz();
+  }else if(a==="meal"){
+    d=day(k); var id=b.dataset.id;
+    if(d.h[id]===b.dataset.v)delete d.h[id]; else d.h[id]=b.dataset.v;
+    save();buzz();
+  }else if(a==="rest"){
+    d=day(k);
+    if(d.rest)d.rest=false;
+    else if(restUsed(k)<2){d.rest=true;d.h.gym=false;}
+    save();buzz();
+  }else if(a==="view"){
+    var nk=b.dataset.k; view=(nk===todayKey())?null:nk;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }else if(a==="today"){
+    view=null;
+  }else if(a==="backup"){
+    showBackup=!showBackup;
+  }else if(a==="copy"){
+    var ta=document.getElementById("bk");
+    try{navigator.clipboard.writeText(ta.value).then(function(){b.textContent="Copied ✓";},function(){ta.select();});}
+    catch(e){ta.select();}
+    return;
+  }else if(a==="restore"){
+    var txt=(document.getElementById("bk")||{}).value||"";
+    try{
+      var o=migrate(JSON.parse(txt)); if(!o)throw 0;
+      S=o; save(); view=null; say("Restored from text ✓",false);
+    }catch(e){say("That text isn't a valid Winter Arc backup.",true);}
+  }else if(a==="reset"){
+    if(armed!=="reset"){arm("reset");}
+    else{armed=null;clearTimeout(armTimer);S=fresh();persist();CFG.dirty=false;saveCfg();view=null;say("Phone data reset. Your Sheet is untouched.",false);}
+  }else if(a==="cfgsave"){
+    var u=(app.querySelector('[data-cfg="url"]')||{}).value||"";
+    CFG.url=u.trim(); CFG.err=""; saveCfg();
+    if(!CFG.url){say("Sheet backup turned off.",false);}
+    else if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(CFG.url)){say("That doesn't look like an Apps Script link. It should start with https://script.google.com/",true);}
+    else{testSheet();return;}
+  }else if(a==="syncnow"){
+    if(!Object.keys(S.days).length){say("Nothing to back up yet. Tick a habit first.",false);render();return;}
+    rev++;CFG.dirty=true;CFG.err="";saveCfg();pushSheet();return;
+  }else if(a==="pull"){
+    if(armed!=="pull"){arm("pull");}
+    else{armed=null;clearTimeout(armTimer);pullSheet();return;}
+  }
+  render();
+});
+
+app.addEventListener("input",function(ev){
+  var t=ev.target,d;
+  if(t.dataset.in==="task"){d=day(viewKey());var ts=tasksOf(d);ts[+t.dataset.i].t=t.value;d.tasks=ts;save();}
+  else if(t.dataset.in==="journal"){d=day(viewKey());d.journal=t.value;save();}
+});
+app.addEventListener("change",function(ev){if(ev.target.dataset.in)setTimeout(softRender,250);});
+app.addEventListener("focusout",function(){setTimeout(function(){if(pendingRender)softRender();},300);});
+app.addEventListener("keydown",function(ev){
+  var t=ev.target;
+  if(ev.key==="Enter"&&t.dataset.in==="task"){
+    ev.preventDefault();var nx=app.querySelector('[data-in="task"][data-i="'+(+t.dataset.i+1)+'"]');
+    if(nx)nx.focus();else t.blur();
+  }
+});
+
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){if(CFG.dirty)pushSheet();}
+  else{softRender();if(CFG.dirty)pushSheet();}
+});
+window.addEventListener("online",function(){if(CFG.dirty)pushSheet();});
+window.addEventListener("pageshow",softRender);
+
+render();
+if(CFG.dirty)setTimeout(pushSheet,1500);
+})();
+</script>
+</body>
+</html>
